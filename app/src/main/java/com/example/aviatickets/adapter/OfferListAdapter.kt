@@ -2,6 +2,7 @@ package com.example.aviatickets.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.aviatickets.R
 import com.example.aviatickets.databinding.ItemOfferBinding
@@ -9,17 +10,18 @@ import com.example.aviatickets.model.entity.Offer
 
 class OfferListAdapter : RecyclerView.Adapter<OfferListAdapter.ViewHolder>() {
 
-    private val items: ArrayList<Offer> = arrayListOf()
+    private var items: ArrayList<Offer> = arrayListOf()
 
-    fun setItems(offerList: List<Offer>) {
+    fun updateList(newList: List<Offer>) {
+        val diffCallback = OfferDiffCallback(items, newList)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+
         items.clear()
-        items.addAll(offerList)
-        notifyDataSetChanged()
+        items.addAll(newList)
 
-        /**
-         * think about recycler view optimization using diff.util
-         */
+        diffResult.dispatchUpdatesTo(this)
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -31,6 +33,11 @@ class OfferListAdapter : RecyclerView.Adapter<OfferListAdapter.ViewHolder>() {
         )
     }
 
+    fun getItems(): List<Offer> {
+        return items
+    }
+
+
     override fun getItemCount(): Int {
         return items.size
     }
@@ -39,9 +46,12 @@ class OfferListAdapter : RecyclerView.Adapter<OfferListAdapter.ViewHolder>() {
         holder.bind(items[position])
     }
 
+
     inner class ViewHolder(
         private val binding: ItemOfferBinding
     ) : RecyclerView.ViewHolder(binding.root) {
+
+
 
         private val context = binding.root.context
 
@@ -66,10 +76,30 @@ class OfferListAdapter : RecyclerView.Adapter<OfferListAdapter.ViewHolder>() {
             }
         }
 
+
         private fun getTimeFormat(minutes: Int): Pair<Int, Int> = Pair(
             first = minutes / 60,
             second = minutes % 60
         )
 
     }
+
+    class OfferDiffCallback(
+        private val oldList: List<Offer>,
+        private val newList: List<Offer>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+
+        override fun getNewListSize(): Int = newList.size
+
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].id == newList[newItemPosition].id
+        }
+
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition] == newList[newItemPosition]
+        }
+    }
 }
+
+

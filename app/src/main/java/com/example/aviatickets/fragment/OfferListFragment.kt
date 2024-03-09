@@ -37,7 +37,8 @@ class OfferListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupUI()
-        adapter.setItems(FakeService.offerList)
+        adapter.updateList(FakeService.offerList)
+
     }
 
     private fun setupUI() {
@@ -45,20 +46,23 @@ class OfferListFragment : Fragment() {
             offerList.adapter = adapter
 
             sortRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-                when (checkedId) {
+                val sortedList = when (checkedId) {
                     R.id.sort_by_price -> {
-                        /**
-                         * implement sorting by price
-                         */
+                        // Sort by price
+                        adapter.getItems().sortedBy { it.price }
                     }
-
                     R.id.sort_by_duration -> {
-                        /**
-                         * implement sorting by duration
-                         */
+                        // Sort by duration
+                        adapter.getItems().sortedBy { it.flight.duration }
+                    }
+                    else -> {
+                        // No sorting
+                        adapter.getItems()
                     }
                 }
+                adapter.updateList(sortedList)
             }
         }
     }
+
 }
